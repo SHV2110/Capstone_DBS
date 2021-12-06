@@ -58,11 +58,11 @@ public class TransactionService {
         Client buyer = clientRepository.findById(orderReqOfBuyer.getClientId())
                 .orElseThrow(() -> new ResourceNotFoundException("Client not Found"));
 
-        //first create the OrderBook instance of the seller request(to be saved to the database later)
+        //first create the OrderBook instance of the buyer request(to be saved to the database later)
         OrderBook buyerOrderBookInstance = new OrderBook(
                 UUID.randomUUID().toString(),
-                buyer,
-                buyerInstrument,
+                buyer,//cilent id
+                buyerInstrument,//instrument id
                 orderReqOfBuyer.getPrice(),
                 orderReqOfBuyer.getQuantity(),
                 orderReqOfBuyer.getQuantity(),
@@ -72,8 +72,8 @@ public class TransactionService {
                 new Date()
         );
 
-        System.out.println("uuid:"+buyerOrderBookInstance.getOrderId());
-
+        System.out.println("uuid:"+buyerOrderBookInstance.getOrderId());//order_id of buyer
+        //if sell order exist with same instrument i.e sell and buy match
         List<OrderBook> sellOrdersWithSameInstrument = orderBookRepository
                 .findAllByOrderDirectionAndOrderStatus(OrderDirection.SELL, OrderStatus.PROCESSING).stream()
                 .filter(record -> {
@@ -89,7 +89,7 @@ public class TransactionService {
         double buyerStocksWorth = orderReqOfBuyer.getQuantity() * orderReqOfBuyer.getPrice();
 
         //perfectSellers = sellers with same instrument and same price expectations and has enough transaction limit to make the transaction
-        List<OrderBook> perfectSellers = sellOrdersWithSameInstrument
+        List<OrderBook> perfectSellers = sellOrdersWithSameInstrument //perfect seller list
                 .stream()
                 .filter(orders -> orders.getClient().getTransactionLimit() >= buyerStocksWorth)
                 .filter(item -> item.getPrice().equals(orderReqOfBuyer.getPrice())).collect(Collectors.toList());
@@ -113,7 +113,7 @@ public class TransactionService {
             // Match multiple sellers to single buyer
 
             //sort perfectSellers based on timestamp and select the sellers which have less quantity than the current buyer
-            List<OrderBook> sellers = perfectSellers.stream()
+            List<OrderBook> sellers = perfectSellers.stream() //list of sellers sorted by ordertime
                     .sorted(Comparator.comparing(OrderBook::getTimeStamp))
                     .filter(order -> order.getQuantity() < orderReqOfBuyer.getQuantity())
                     .collect(Collectors.toList());
@@ -259,6 +259,7 @@ public class TransactionService {
         sellerOrderBookInstance.setQuantity(sellerOrderBookInstance.getQuantity() - quantityToBeSubtracted);
         if(buyerOrderBookInstance.getQuantity().equals(0)){
             buyerOrderBookInstance.setOrderStatus(OrderStatus.COMPLETED);
+            
         }
         if(sellerOrderBookInstance.getQuantity().equals(0)){
             sellerOrderBookInstance.setOrderStatus(OrderStatus.COMPLETED);

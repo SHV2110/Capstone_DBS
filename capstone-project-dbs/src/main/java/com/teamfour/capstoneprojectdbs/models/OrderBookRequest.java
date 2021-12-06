@@ -8,6 +8,11 @@ import lombok.Data;
 @Data
 public class OrderBookRequest {
     String clientId;
+    String instrumentId;
+    Double price;
+    Integer quantity;
+    OrderDirection orderDirection;
+    Boolean limitOrder;
     public String getClientId() {
 		return clientId;
 	}
@@ -54,9 +59,5 @@ public class OrderBookRequest {
 	public void setLimitOrder(Boolean limitOrder) {
 		this.limitOrder = limitOrder;
 	}
-	String instrumentId;
-    Double price;
-    Integer quantity;
-    OrderDirection orderDirection;
-    Boolean limitOrder;
+	
 }
